@@ -1,13 +1,24 @@
 [tool.poetry]
-name = "9_evaluation_selection-by-Andrei_Medvedev"
+name = "evaluation_selection_project"
 version = "0.1.0"
 description = "9_evaluation_selection task by Andrei Medvedev"
 authors = ["andreiok <andreiok@gmail.com>"]
 
+[tool.poetry.scripts]
+train = "evaluation_selection_project.train:train"
+
 [tool.poetry.dependencies]
 python = "^3.9"
+click = "^8.0.3"
+pandas = "^1.3.4"
+sklearn = "^0.0"
+scikit-learn = "^1.0.1"
+mlflow = "^1.22.0"
 
 [tool.poetry.dev-dependencies]
+black = "^21.11b1"
+mypy = "^0.910"
+pytest = "^6.2.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

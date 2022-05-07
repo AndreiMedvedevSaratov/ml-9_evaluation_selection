@@ -2,7 +2,7 @@
 from click.testing import CliRunner
 import pytest
 
-from heart_ml.train import train
+from evaluation_selection_project.train import train
 
 
 @pytest.fixture
