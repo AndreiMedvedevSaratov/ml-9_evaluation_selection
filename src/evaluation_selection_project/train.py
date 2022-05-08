@@ -61,7 +61,7 @@ from .pipeline import create_pipeline
     type=int)
 @click.option(
     "--with-grid",
-    default=False,
+    default=True,
     type=bool)
 def train(
     dataset_path: Path,

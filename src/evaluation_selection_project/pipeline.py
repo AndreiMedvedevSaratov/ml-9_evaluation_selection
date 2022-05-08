@@ -2,6 +2,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectFromModel, VarianceThreshold  # type: ignore
+import click
 
 def create_pipeline(
     use_scaler: bool, 
