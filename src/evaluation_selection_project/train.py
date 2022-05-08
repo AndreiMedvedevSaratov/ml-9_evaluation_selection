@@ -59,6 +59,10 @@ from .pipeline import create_pipeline
     "--with-feature-selection", 
     default=0, 
     type=int)
+@click.option(
+    "--with-grid",
+    default=False,
+    type=bool)
 def train(
     dataset_path: Path,
     save_model_path: Path,
@@ -68,6 +72,7 @@ def train(
     max_iter: int,
     logreg_c: float,
     with_feature_selection: int,
+    with_grid: bool,
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
@@ -80,7 +85,8 @@ def train(
             max_iter, 
             logreg_c,
             random_state,
-            with_feature_selection)
+            with_feature_selection,
+            with_grid)
 
         pipeline.fit(features_train, target_train)
 

@@ -8,7 +8,8 @@ def create_pipeline(
     max_iter: int, 
     logreg_C: float,
     random_state: int,
-    with_feature_selection: int
+    with_feature_selection: int,
+    with_grid: bool
 ) -> Pipeline:
     pipeline_steps = []
 
@@ -21,6 +22,14 @@ def create_pipeline(
                 "with_feature_selection",
             )
         )
+
+    if with_grid is True:
+        click.echo(f"with_grid: {with_grid}.")
+        # pipeline_steps.append(
+        #     (
+        #         "with_grid",
+        #     )
+        # )
 
     pipeline_steps.append(
         (
