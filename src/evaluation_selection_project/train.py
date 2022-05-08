@@ -55,6 +55,10 @@ from .pipeline import create_pipeline
     type=float,
     show_default=True,
 )
+@click.option(
+    "--with-feature-selection", 
+    default=0, 
+    type=int)
 def train(
     dataset_path: Path,
     save_model_path: Path,
@@ -63,6 +67,7 @@ def train(
     use_scaler: bool,
     max_iter: int,
     logreg_c: float,
+    with_feature_selection: int,
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
@@ -70,13 +75,24 @@ def train(
         test_split_ratio,
     )
     with mlflow.start_run():
-        pipeline = create_pipeline(use_scaler, max_iter, logreg_c, random_state)
+        pipeline = create_pipeline(
+            use_scaler, 
+            max_iter, 
+            logreg_c,
+            random_state,
+            with_feature_selection)
+
         pipeline.fit(features_train, target_train)
+
         accuracy = accuracy_score(target_val, pipeline.predict(features_val))
+        
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("max_iter", max_iter)
         mlflow.log_param("logreg_c", logreg_c)
         mlflow.log_metric("accuracy", accuracy)
+
         click.echo(f"Accuracy: {accuracy}.")
+
         dump(pipeline, save_model_path)
+
         click.echo(f"Model is saved to {save_model_path}.")
