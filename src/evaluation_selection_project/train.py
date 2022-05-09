@@ -2,66 +2,72 @@ from pathlib import Path
 from joblib import dump
 
 import click
-import mlflow
-import mlflow.sklearn
-from sklearn.metrics import accuracy_score
+import mlflow  # type: ignore[unused-ignore]
+import mlflow.sklearn  # type: ignore[unused-ignore]
+
+from sklearn.model_selection import KFold  # type: ignore[unused-ignore]
+from sklearn.model_selection import GridSearchCV  # type: ignore[unused-ignore]
+from sklearn.model_selection import cross_val_score  # type: ignore[unused-ignore]
 
 from .data import get_dataset
 from .pipeline import create_pipeline_Logistic_Regression
 
 @click.command()
+
 @click.option(
     "-d",
     "--dataset-path",
     default="data/train.csv",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
-    show_default=True,
 )
+
 @click.option(
     "-s",
     "--save-model-path",
     default="data/model.joblib",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
-    show_default=True,
 )
+
 @click.option(
     "--random-state",
     default=42,
     type=int,
-    show_default=True,
 )
+
 @click.option(
     "--test-split-ratio",
-    default=0.2,
-    type=click.FloatRange(0, 1, min_open=True, max_open=True),
-    show_default=True,
+    default=10,
+    type=int,
 )
+
 @click.option(
     "--with-scaler",
     default=True,
     type=bool,
-    show_default=True,
 )
+
 @click.option(
     "--max-iter",
     default=100,
     type=int,
-    show_default=True,
 )
+
 @click.option(
     "--logreg-c",
     default=1.0,
     type=float,
-    show_default=True,
 )
+
 @click.option(
     "--with-feature-selection", 
     default=2, 
     type=int)
+
 @click.option(
     "--with-grid",
-    default=True,
+    default=False,
     type=bool)
+
 @click.option(
     "--model-selector", 
     default=1, 
@@ -71,18 +77,16 @@ def train(
     dataset_path: Path,
     save_model_path: Path,
     random_state: int,
-    test_split_ratio: float,
+    test_split_ratio: int,
+    with_scaler: bool,
     max_iter: int,
     logreg_c: float,
-    with_scaler: bool,
     with_feature_selection: int,
-    with_grid: bool,
     model_selector: int,
+    with_grid: bool,
 ) -> None:
-    features_train, features_val, target_train, target_val = get_dataset(
-        dataset_path,
-        random_state,
-        test_split_ratio,
+    features, target = get_dataset(
+        dataset_path
     )
 
     with mlflow.start_run():
@@ -91,22 +95,68 @@ def train(
                 with_scaler, 
                 max_iter, 
                 logreg_c,
-                random_state,
                 with_feature_selection,
-                with_grid)
+                with_grid,
+                random_state,
+            )
 
             mlflow.log_param("Selected Model", "Logistic Regression")
 
-            pipeline.fit(features_train, target_train)
+            if with_grid is False:
+                mlflow.log_param("max_iter", max_iter)
+                mlflow.log_param("logreg_c", logreg_c)
 
-            accuracy = accuracy_score(target_val, pipeline.predict(features_val))
+            if with_grid is True:
+                cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
+                param_grid = {
+                    "penalty": ["l1", "l2"],
+                    "C": [1, 10, 100],
+                    "solver": ["newton-cg", "lbfgs", "liblinear"],
+                    "max_iter": [100, 1000, 2000, 3000],
+                }
+                scoring = [
+                    "accuracy",
+                    "f1_weighted",
+                    "precision_weighted",
+                    "recall_weighted",
+                ]
+                search = GridSearchCV(
+                    pipeline,
+                    param_grid=param_grid,
+                    n_jobs=1,
+                    cv=cv_inner,
+                    scoring=scoring,
+                    refit="f1_weighted",
+                )
+
+            cv = KFold(n_splits=test_split_ratio,
+                    shuffle=True, random_state=random_state)
+
+            if with_grid is True:
+                f1 = cross_val_score(
+                search, features, target, scoring="f1_weighted", cv=cv, n_jobs=1).mean()
+                mlflow.log_param("max_iter", search.best_params_["max_iter"])
+                mlflow.log_param("logreg_c", search.best_params_["C"])
+                search.fit(features, target)
+            else:
+                f1 = cross_val_score(
+                    pipeline, features, target, scoring="f1_weighted", cv=cv, n_jobs=1).mean()
+                pipeline.fit(features, target)
             
-            mlflow.log_param("with_scaler", with_scaler)
-            mlflow.log_param("max_iter", max_iter)
-            mlflow.log_param("logreg_c", logreg_c)
-            mlflow.log_metric("accuracy", accuracy)
+            if with_feature_selection == 0:
+                mlflow.log_param("with_feature_selection", "None")
 
-            click.echo(f"Accuracy: {accuracy}.")
+            if with_feature_selection == 1:
+                mlflow.log_param("with_feature_selection", "SelectFromModel")
+
+            if with_feature_selection == 2:
+                mlflow.log_param("with_feature_selection", "VarianceThreshold")
+
+            mlflow.log_param("with_scaler", with_scaler)
+            mlflow.log_param("splits", test_split_ratio)
+            
+            mlflow.log_metric("f1-score", f1)
+            click.echo(f"f1-score: {f1}.")
 
             dump(pipeline, save_model_path)
 
