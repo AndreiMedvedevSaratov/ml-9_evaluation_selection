@@ -37,7 +37,7 @@ from .pipeline import create_pipeline_Logistic_Regression
     show_default=True,
 )
 @click.option(
-    "--use-scaler",
+    "--with-scaler",
     default=True,
     type=bool,
     show_default=True,
@@ -56,7 +56,7 @@ from .pipeline import create_pipeline_Logistic_Regression
 )
 @click.option(
     "--with-feature-selection", 
-    default=0, 
+    default=2, 
     type=int)
 @click.option(
     "--with-grid",
@@ -72,9 +72,9 @@ def train(
     save_model_path: Path,
     random_state: int,
     test_split_ratio: float,
-    use_scaler: bool,
     max_iter: int,
     logreg_c: float,
+    with_scaler: bool,
     with_feature_selection: int,
     with_grid: bool,
     model_selector: int,
@@ -88,7 +88,7 @@ def train(
     with mlflow.start_run():
         if model_selector == 1:
             pipeline = create_pipeline_Logistic_Regression(
-                use_scaler, 
+                with_scaler, 
                 max_iter, 
                 logreg_c,
                 random_state,
@@ -101,7 +101,7 @@ def train(
 
             accuracy = accuracy_score(target_val, pipeline.predict(features_val))
             
-            mlflow.log_param("use_scaler", use_scaler)
+            mlflow.log_param("with_scaler", with_scaler)
             mlflow.log_param("max_iter", max_iter)
             mlflow.log_param("logreg_c", logreg_c)
             mlflow.log_metric("accuracy", accuracy)
