@@ -4,7 +4,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectFromModel, VarianceThreshold  # type: ignore
 import click
 
-def create_pipeline(
+
+def create_pipeline_Logistic_Regression(
     use_scaler: bool, 
     max_iter: int, 
     logreg_C: float,

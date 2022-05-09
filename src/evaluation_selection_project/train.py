@@ -7,8 +7,7 @@ import mlflow.sklearn
 from sklearn.metrics import accuracy_score
 
 from .data import get_dataset
-from .pipeline import create_pipeline
-
+from .pipeline import create_pipeline_Logistic_Regression
 
 @click.command()
 @click.option(
@@ -63,6 +62,11 @@ from .pipeline import create_pipeline
     "--with-grid",
     default=True,
     type=bool)
+@click.option(
+    "--model-selector", 
+    default=1, 
+    type=int)
+
 def train(
     dataset_path: Path,
     save_model_path: Path,
@@ -73,32 +77,37 @@ def train(
     logreg_c: float,
     with_feature_selection: int,
     with_grid: bool,
+    model_selector: int,
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
         random_state,
         test_split_ratio,
     )
+
     with mlflow.start_run():
-        pipeline = create_pipeline(
-            use_scaler, 
-            max_iter, 
-            logreg_c,
-            random_state,
-            with_feature_selection,
-            with_grid)
+        if model_selector == 1:
+            pipeline = create_pipeline_Logistic_Regression(
+                use_scaler, 
+                max_iter, 
+                logreg_c,
+                random_state,
+                with_feature_selection,
+                with_grid)
 
-        pipeline.fit(features_train, target_train)
+            mlflow.log_param("Selected Model", "Logistic Regression")
 
-        accuracy = accuracy_score(target_val, pipeline.predict(features_val))
-        
-        mlflow.log_param("use_scaler", use_scaler)
-        mlflow.log_param("max_iter", max_iter)
-        mlflow.log_param("logreg_c", logreg_c)
-        mlflow.log_metric("accuracy", accuracy)
+            pipeline.fit(features_train, target_train)
 
-        click.echo(f"Accuracy: {accuracy}.")
+            accuracy = accuracy_score(target_val, pipeline.predict(features_val))
+            
+            mlflow.log_param("use_scaler", use_scaler)
+            mlflow.log_param("max_iter", max_iter)
+            mlflow.log_param("logreg_c", logreg_c)
+            mlflow.log_metric("accuracy", accuracy)
 
-        dump(pipeline, save_model_path)
+            click.echo(f"Accuracy: {accuracy}.")
 
-        click.echo(f"Model is saved to {save_model_path}.")
+            dump(pipeline, save_model_path)
+
+            click.echo(f"Model is saved to {save_model_path}.")
