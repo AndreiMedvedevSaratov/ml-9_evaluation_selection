@@ -128,4 +128,6 @@ poetry run mypy .
 
 # Total - 71 points
 
-I need 2 more commits )) so I write and delete this line ))) Good luck everybody!
+Good luck everybody!
+Job is done!
+Waiting for the marks.
