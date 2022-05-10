@@ -16,7 +16,12 @@ def create_pipeline_Logistic_Regression(
     pipeline_steps = []
 
     if with_scaler:
-        pipeline_steps.append(("scaler", StandardScaler()))
+        pipeline_steps.append(
+            (
+                "scaler", 
+                StandardScaler()
+            )
+        )
 
     if with_feature_selection == 1:
         pipeline_steps.append(
@@ -27,7 +32,12 @@ def create_pipeline_Logistic_Regression(
         )
 
     if with_feature_selection == 2:
-        pipeline_steps.append(("feature_selection", VarianceThreshold(threshold=0.20)))
+        pipeline_steps.append(
+            (
+                "with_feature_selection", 
+            VarianceThreshold(threshold=0.20)
+            )
+        )
 
     if with_grid is True:
         pipeline_steps.append(
@@ -45,4 +55,55 @@ def create_pipeline_Logistic_Regression(
             )
         )
 
+    return Pipeline(steps=pipeline_steps)
+
+
+def create_pipeline_RandomForest(
+    with_scaler: bool,
+    n_estimators: int,
+    with_feature_selection: int,
+    grid_search: bool,
+    random_state: int,
+) -> Pipeline:
+    pipeline_steps = []
+
+    if with_scaler:
+        pipeline_steps.append(
+            (
+                "scaler", 
+                StandardScaler()
+            )
+        )
+
+    if with_feature_selection == 1:
+        pipeline_steps.append(
+            (
+                "with_feature_selection",
+                SelectFromModel(RandomForestClassifier(random_state=2022)),
+            )
+        )
+
+    if with_feature_selection == 2:
+        pipeline_steps.append(
+            (
+                "with_feature_selection", 
+                VarianceThreshold(threshold=0.20)
+            )
+        )
+
+    if grid_search is False:
+        pipeline_steps.append(
+            (
+                "classifier",
+                RandomForestClassifier(n_estimators=n_estimators, random_state=random_state),
+            )
+        )
+        
+    if grid_search is True:
+        pipeline_steps.append(
+            (
+                "classifier",
+                RandomForestClassifier(random_state=random_state),
+            )
+        )
     return Pipeline(steps=pipeline_steps)
