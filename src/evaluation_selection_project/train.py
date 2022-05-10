@@ -189,6 +189,9 @@ def train(
 
             # if with_grid is False:
             mlflow.log_param("n_estimators", n_estimators)
+            mlflow.log_param("max_iter", max_iter)
+            mlflow.log_param("logreg_c", logreg_c)
+
 
             # if with_grid is True:
             #     cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
