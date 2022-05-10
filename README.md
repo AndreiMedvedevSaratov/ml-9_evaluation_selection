@@ -1,5 +1,3 @@
-# 9 Evaluation Selection Project
-
 # 9 Evaluation Selection Project for RS School Machine Learning course.
 
 I used [Forest Cover Type Prediction](https://www.kaggle.com/competitions/forest-cover-type-prediction/) dataset.
@@ -72,7 +70,7 @@ Now you can use developer instruments, e.g. pytest:
 ```sh
 poetry run pytest
 ```
-![tests](assets/tests.png)
+![tests](info/tests.png)
 
 Check your code annotation with mypy by using poetry:
 ```sh
