@@ -7,7 +7,7 @@ import mlflow.sklearn  # type: ignore[unused-ignore]
 
 from sklearn.metrics import accuracy_score  # type: ignore[unused-ignore]
 from sklearn.model_selection import KFold  # type: ignore[unused-ignore]
-from sklearn.model_selection import GridSearchCV  # type: ignore[unused-ignore]
+# from sklearn.model_selection import GridSearchCV  # type: ignore[unused-ignore]
 from sklearn.model_selection import cross_val_score  # type: ignore[unused-ignore]
 
 from .data import get_dataset
@@ -50,7 +50,7 @@ from .pipeline import create_pipeline_RandomForest
 
 @click.option(
     "--max-iter",
-    default=200,
+    default=100,
     type=int,
 )
 
@@ -72,7 +72,7 @@ from .pipeline import create_pipeline_RandomForest
 
 @click.option(
     "--model-selector", 
-    default=2, 
+    default=1, 
     type=int)
 
 @click.option(
@@ -105,7 +105,7 @@ def train(
                 max_iter, 
                 logreg_c,
                 with_feature_selection,
-                with_grid,
+                # with_grid,
                 random_state,
             )
 
@@ -181,7 +181,7 @@ def train(
                 with_scaler,
                 n_estimators,
                 with_feature_selection,
-                with_grid,
+                # with_grid,
                 random_state,
             )
 
