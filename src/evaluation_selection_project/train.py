@@ -1,5 +1,6 @@
 from pathlib import Path
 from joblib import dump
+import pandas as pd  # type: ignore
 
 import click
 import mlflow  # type: ignore[unused-ignore]
@@ -38,7 +39,7 @@ from .pipeline import create_pipeline_RandomForest
 
 @click.option(
     "--test-split-ratio",
-    default=10,
+    default=50,
     type=int,
 )
 
@@ -50,7 +51,7 @@ from .pipeline import create_pipeline_RandomForest
 
 @click.option(
     "--max-iter",
-    default=100,
+    default=10000,
     type=int,
 )
 
@@ -62,7 +63,7 @@ from .pipeline import create_pipeline_RandomForest
 
 @click.option(
     "--with-feature-selection", 
-    default=0, 
+    default=2, 
     type=int)
 
 # @click.option(
@@ -72,12 +73,12 @@ from .pipeline import create_pipeline_RandomForest
 
 @click.option(
     "--model-selector", 
-    default=1, 
+    default=2, 
     type=int)
 
 @click.option(
     "--n-estimators", 
-    default=100, 
+    default=1000, 
     type=int
     )
 
@@ -248,3 +249,11 @@ def train(
             dump(pipeline, save_model_path)
 
             click.echo(f"Model is saved to {save_model_path}.")
+
+        X = pd.read_csv('data/test.csv')
+        pipeline.fit(features, target)
+        predictions = pipeline.predict(X)
+        submission = pd.read_csv('data/sampleSubmission.csv')
+        submission["Cover_Type"] = predictions
+        submission[["Id", "Cover_Type"]].to_csv(
+            'data/submission.csv', index=False)
